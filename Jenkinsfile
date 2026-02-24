@@ -1,22 +1,49 @@
 pipeline {
     agent {
-        docker { image 'maven:3.9.4-openjdk-17' }
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: maven
+    image: maven:3.9.4-openjdk-17
+    command:
+    - cat
+    tty: true
+"""
+        }
     }
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/fasil7170/test.git', branch: 'main'
+                checkout scm
             }
         }
         stage('Build') {
-            steps { sh 'mvn clean compile' }
+            steps {
+                container('maven') {
+                    sh 'mvn clean install'
+                }
+            }
         }
         stage('Test') {
-            steps { sh 'mvn test' }
+            steps {
+                container('maven') {
+                    sh 'mvn test'
+                }
+            }
         }
     }
     post {
-        success { echo 'Pipeline completed successfully! ✅' }
-        failure { echo 'Pipeline failed! ❌' }
+        always {
+            echo 'Pipeline finished'
+        }
+        success {
+            echo 'Build succeeded ✅'
+        }
+        failure {
+            echo 'Build failed ❌'
+        }
     }
 }

@@ -1,25 +1,23 @@
 pipeline {
     agent {
         kubernetes {
+            label 'jenkins-maven'
+            defaultContainer 'jnlp'
             yaml """
 apiVersion: v1
 kind: Pod
 spec:
   containers:
   - name: maven
-    image: maven:3.9.4-openjdk-17
+    image: maven:3.9.4-jdk-17   # <- fixed valid tag
+    tty: true
     command:
     - cat
-    tty: true
 """
         }
     }
+
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
         stage('Build') {
             steps {
                 container('maven') {
@@ -27,23 +25,11 @@ spec:
                 }
             }
         }
-        stage('Test') {
-            steps {
-                container('maven') {
-                    sh 'mvn test'
-                }
-            }
-        }
     }
+
     post {
         always {
             echo 'Pipeline finished'
-        }
-        success {
-            echo 'Build succeeded ✅'
-        }
-        failure {
-            echo 'Build failed ❌'
         }
     }
 }

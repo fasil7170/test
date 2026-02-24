@@ -1,5 +1,7 @@
 pipeline {
-    agent any
+    agent {
+        docker { image 'maven:3.9.4-openjdk-17' }
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -7,14 +9,14 @@ pipeline {
             }
         }
         stage('Build') {
-            steps {
-                sh 'mvn clean compile'
-            }
+            steps { sh 'mvn clean compile' }
         }
         stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
+            steps { sh 'mvn test' }
         }
+    }
+    post {
+        success { echo 'Pipeline completed successfully! ✅' }
+        failure { echo 'Pipeline failed! ❌' }
     }
 }

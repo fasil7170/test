@@ -1,18 +1,22 @@
 pipeline {
     agent {
         kubernetes {
-            label 'jenkins-maven'
+            label 'jenkins-maven-full'
             defaultContainer 'jnlp'
             yaml """
 apiVersion: v1
 kind: Pod
 spec:
   containers:
-  - name: maven
-    image: maven:3.9.4-jdk-17   # <- fixed valid tag
+  - name: jnlp
+    image: jenkins/inbound-agent:latest   # Jenkins agent container
+    args: ['\$(JENKINS_SECRET)', '\$(JENKINS_NAME)']
     tty: true
+  - name: maven
+    image: maven:3.9.4-jdk-17              # Correct Maven image
     command:
     - cat
+    tty: true
 """
         }
     }
